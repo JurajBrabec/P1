@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>Installation</title>
+  <link rel="stylesheet" type="text/css" href="semanticui/semantic.min.css">
+  <link rel="stylesheet" type="text/css" href="semanticui/components/dropdown.min.css">
+  <script src="jquery/jquery.min.js"></script>
+  <script src="semanticui/semantic.min.js"></script>
+  <script src="semanticui/dropdown.min.js"></script>
+</head>
+<body>
+  <script src="main.js"></script>
+  <div class="ui container">
+    <h1>Installation</h1>
+	<div class="ui sixteen column grid">
+		<div class="ui sixteen column row">
+			<div class="six wide column">
+				<div class="ui disabled labeled input">
+					<div class="ui label">Root folder</div>
+					<input id="root" type="text" value="C:\MARS">
+				</div>
+			</div>
+			<div class="five wide column">
+				<div class="ui labeled input">
+					<div class="ui label">Site name</div>
+					<input id="siteName" type="text" placeholder="Default site">
+				</div>
+			</div>
+			<div class="four wide column">
+				<div class="ui labeled input">
+					<div class="ui label">Time zone</div>
+					<select class="ui search selection dropdown" id="timeZone">
+						<option value="">Time zone</option>
+						<option>Europe/Bratislava</option>
+					</select>
+				</div>
+			</div>
+		</div>
+		<div class="ui sixteen column row">
+			<div class="six wide column">
+				<div class="ui labeled input">
+					<div class="ui label">Site admin</div>
+					<input id="siteAdmin" type="text" value="mars-admin@dxc.com">
+				</div>
+			</div>
+			<div class="five wide column">
+				<div class="ui labeled input">
+					<div class="ui label">DB dump time</div>
+					<input id="dbDump" type="text" value="16:00">
+				</div>
+			</div>
+		</div>
+		<div class="ui sixteen column row">
+			<div class="six wide column">
+				<div class="ui action labeled input">
+					<div class="ui label">SMTP host</div>
+					<input id="smtpHost" type="text" value="localhost">
+					<button id="smtpCheck" class="ui icon button"><i class="question icon"></i></button>
+				</div>
+			</div>
+			<div class="ten wide column">
+				<div class="ui labeled input">
+					<div class="ui label">SMTP from</div>
+					<input id="smtpFrom" type="text" value="MARS Reports<mars-reports@dxc.com>">
+				</div>
+			</div>
+		</div>
+		<div class="ui sixteen wide row">
+			<div class="six wide column">
+				<div class="ui labeled input">
+					<div class="ui label">DB host</div>
+					<input id="dbHost" type="text" value="localhost">
+				</div>
+			</div>
+			<div class="five wide column">
+				<div class="ui action labeled input">
+					<div class="ui label">DB port</div>
+					<input id="dbPort" type="text" value="3306">
+					<button id="dbCheck" class="ui icon button"><i class="question icon"></i></button>
+				</div>
+			</div>
+			<div class="five wide column">
+				<div class="ui action labeled input">
+					<div class="ui label">HTTP port</div>
+					<input id="httpPort" type="text" value="80">
+					<button id="httpCheck" class="ui icon button"><i class="question icon"></i></button>
+				</div>
+			</div>
+		</div>
+		<div class="ui sixteen wide row">
+			<div class="six wide column">
+				<div class="ui action labeled input">
+					<div class="ui label">Scheduled Task</div>
+					<input id="taskName" type="text" value="MARS-Scheduler">
+					<button id="taskCheck" class="ui icon button"><i class="question icon"></i></button>
+				</div>
+			</div>
+			<div class="three wide column">
+				<div class="ui labeled input">
+					<div class="ui label">Interval (min.)</div>
+					<input id="taskInterval" type="text" value="15">
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="ui divider"></div>
+	<div class="ui buttons">
+		<button id="saveIni" class="ui positive button">Save</button>
+		<div class="or"></div>
+		<button id="stopServer" class="ui negative button">Exit</button>
+	</div>
+  </div>
+</body>
+</html>
