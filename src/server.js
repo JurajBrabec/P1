@@ -31,6 +31,7 @@ console.log( 'Starting...');
 var server = http.createServer( function( req, res ) {
 	var uri = url.parse( req.url ).pathname;
 	if ( uri == '/' ) uri = '/index.html';
+	if ( uri == '/index.html' ) uri = '/src/index.html';
 	if ( req.method == 'POST' ) {
 		var body = '';
 		req.on( 'data', function ( data ) { body += data; } );
@@ -56,7 +57,7 @@ var server = http.createServer( function( req, res ) {
 		return;
 	}
 	if ( uri == '/api/root' ) { 
-		res.end( __dirname );
+		res.end( process.cwd( ) );
 		return;
 	}
 	if ( uri == '/api/check' ) {
