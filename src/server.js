@@ -3,7 +3,10 @@ var url = require( 'url' );
 var path = require( 'path' );
 var fs = require( 'fs' );
 var net = require( 'net' ); 
-proc = require('child_process');
+var proc = require( 'child_process' );
+module.paths = [ path.resolve( process.cwd( ), 'bin/nodejs/node_modules' ) ];
+var ini = require( 'ini' );
+var moment = require( 'moment-timezone' );
 var port = 9615;
 
 var mimeTypes = {
@@ -27,6 +30,9 @@ function getParam( req, name ) {
 }
 
 console.log( 'Starting...');
+var config = ini.parse( fs.readFileSync( path.resolve( process.cwd( ), 'config.ini' ), 'utf-8' ) );
+config.root = process.cwd( );
+config.timeZone = moment.tz.guess( );
 
 var server = http.createServer( function( req, res ) {
 	var uri = url.parse( req.url ).pathname;
@@ -44,72 +50,69 @@ var server = http.createServer( function( req, res ) {
 			console.log( 'Unknown POST URI: ' + uri );
 		} );
 		return;
-    }	
-	if ( uri == '/api/stop' ) { 
-		console.log( 'Closing...' ) ;
-		res.end( 'Closed.' );
-		req.connection.end( );
-		req.connection.destroy;
-		server.close( function( ) {
-			console.log('Closed.');
-			process.exit( );
-		} );
-		return;
+    }
+	switch ( uri ) {
+		case '/api/config':
+			res.end( JSON.stringify( config ) );
+			break;
+		case '/api/check':
+			var checkHost = getParam( req, 'host' );
+			var checkPort = getParam( req, 'port' );
+			var s = new net.Socket( );
+			s.setTimeout( 1500, function( ) { s.destroy( ); res.end( '0' ); } );
+			s.on( 'error', function( ) {
+				s.destroy( );
+				res.end( '0' );
+			} );
+			s.connect( checkPort, checkHost, function( ) {
+				s.destroy( );
+				res.end( '1' );
+			} );
+			break;
+		case '/api/task/query':
+			var checkTask = getParam( req, 'task' );
+			proc.exec( 'schtasks /query /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
+				res.end( err == null ? '1' : '0'  );
+			} );
+			break;
+		case '/api/task/create':
+			var checkTask = getParam( req, 'task' );
+			proc.exec( 'schtasks /create /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
+				res.end( err == null ? '1' : '0'  );
+			} );
+			break;
+		case '/api/task/delete':
+			var checkTask = getParam( req, 'task' );
+			proc.exec( 'schtasks /delete /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
+				res.end( err == null ? '1' : '0'  );
+			} );
+			break;
+		case '/api/stop':
+			console.log( 'Closing...' ) ;
+			res.end( 'Closed.' );
+			req.connection.end( );
+			req.connection.destroy;
+			server.close( function( ) {
+				console.log('Closed.');
+				process.exit( );
+			} );
+			break;
+		default:
+			var filename = path.join( process.cwd( ), uri );
+			fs.exists( filename, function( exists ) {
+				if( !exists ) {
+					console.log( 'Resource missing: : ' + filename ) ;
+					res.writeHead( 200, { 'Content-Type': 'text/plain' } );
+					res.write( '404 Not Found\n' );
+					res.end( );
+					return;
+				}
+				var mimeType = mimeTypes[ path.extname( filename ).split( '.' )[ 1 ] ];
+				res.writeHead( 200, { 'Content-Type': mimeType } );
+				var fileStream = fs.createReadStream( filename );
+				fileStream.pipe( res );
+			} );
 	}
-	if ( uri == '/api/root' ) { 
-		res.end( process.cwd( ) );
-		return;
-	}
-	if ( uri == '/api/check' ) {
-		var checkHost = getParam( req, 'host' );
-		var checkPort = getParam( req, 'port' );
-		var s = new net.Socket( ); 
-		s.setTimeout( 1500, function( ) { s.destroy( ); res.end( '0' ); } ); 
-		s.on( 'error', function( ) {
-			s.destroy( ); 
-			res.end( '0' );
-		} ); 
-		s.connect( checkPort, checkHost, function( ) {
-			s.destroy( ); 
-			res.end( '1' );
-		} ); 		
-		return;
-	}
-	if ( uri == '/api/task/query' ) {
-		var checkTask = getParam( req, 'task' );
-		proc.exec( 'schtasks /query /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
-			res.end( err == null ? '1' : '0'  );
-		} );
-		return;
-	}
-	if ( uri == '/api/task/create' ) {
-		var checkTask = getParam( req, 'task' );
-		proc.exec( 'schtasks /create /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
-			res.end( err == null ? '1' : '0'  );
-		} );
-		return;
-	}
-	if ( uri == '/api/task/delete' ) {
-		var checkTask = getParam( req, 'task' );
-		proc.exec( 'schtasks /delete /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
-			res.end( err == null ? '1' : '0'  );
-		} );
-		return;
-	}
-	var filename = path.join( process.cwd( ), uri );
-	fs.exists( filename, function( exists ) {
-		if( !exists ) {
-			console.log( 'Resource missing: : ' + filename ) ;
-			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
-			res.write( '404 Not Found\n' );
-			res.end( );
-			return;
-		}
-		var mimeType = mimeTypes[ path.extname( filename ).split( '.' )[ 1 ] ];
-		res.writeHead( 200, { 'Content-Type': mimeType } );
-		var fileStream = fs.createReadStream( filename );
-		fileStream.pipe( res );
-	} );
 } ).listen( port, function( ){
     console.log( 'Listening on port ' + port + '...');
 	proc.exec( 'start http://localhost:' + port );

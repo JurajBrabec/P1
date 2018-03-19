@@ -1,21 +1,26 @@
 jQuery( document ).ready( function( $ ) {
-	$.get( '/api/root', function( data ) { $( '#root' ).val( data ); } );
-	$( 'div.ui.labeled.input' ).addClass( 'small fluid' );
-	$( 'div.ui.labeled.input button' ).addClass( 'small secondary' );
-//	$( 'div.ui.buttons' ).addClass( 'small' );
-	$( '#timeZone' ).dropdown( );	
-	$( '#httpCheck' ).attr( 'onclick', 'httpCheck( event )' );
-	$( '#dbCheck' ).attr( 'onclick', 'dbCheck( event )' );
-	$( '#smtpCheck' ).attr( 'onclick', 'smtpCheck( event )' );
-	$( '#taskCheck' ).attr( 'onclick', 'taskCheck( event )' );
-	$( '#saveIni' ).attr( 'onclick', 'saveIni( event )' );
-	$( '#stopServer' ).attr( 'onclick', 'stopServer( event )' );
+	$.get( '/api/config', function( data ) {
+		config = JSON.parse( data );
+		$( '#root').val( config.root );
+		$( '#timeZone' ).val( config.timeZone ).dropdown( );
+		$( '#dbDump').val( config.DB.dumpTime );
+		$( '#siteAdmin').val( config.HTTP.admin );
+		$( '#smtpHost').val( config.SMTP.host );
+		$( '#smtpFrom').val( config.SMTP.from );
+		$( '#taskName').val( config.ScheduledTask.name );
+		$( '#httpCheck' ).attr( 'onclick', 'httpCheck( event )' );
+		$( '#dbCheck' ).attr( 'onclick', 'dbCheck( event )' );
+		$( '#smtpCheck' ).attr( 'onclick', 'smtpCheck( event )' );
+		$( '#taskCheck' ).attr( 'onclick', 'taskCheck( event )' );
+		$( '#saveIni' ).attr( 'onclick', 'saveIni( event )' );
+		$( '#stopServer' ).attr( 'onclick', 'stopServer( event )' );
+	} );
 } );
 
 function doCheck( event, url, data, classes, icons ) {
 	event.preventDefault( );
 	$( event.target )
-		.removeClass( 'negative positive' )
+		.removeClass( 'negative yellow positive' )
 		.addClass( 'secondary loading' );
 	$.get( { 
 		url: url,
@@ -24,33 +29,31 @@ function doCheck( event, url, data, classes, icons ) {
 	} ).then( function( data ) {
 		$( event.target )
 			.removeClass( 'secondary loading' )
-//			.addClass( data == expect ? 'positive' : 'negative'  )
-//			.find( 'i' ).removeClass( 'question thumbs up exclamation' ).addClass( data == expect ? 'thumbs up' : 'exclamation' );
 			.addClass( classes[ data ] )
 			.find( 'i' ).attr( 'class', 'icon ' + icons[ data ] );
 	} );
 }
 
 function httpCheck( event ) {
-	doCheck( event, '/api/check', { host : 'localhost', port : $( '#httpPort' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'thumbs up', 1: 'exclamation' } );
+	doCheck( event, '/api/check', { host : 'localhost', port : config.HTTP.port }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
 }
 function dbCheck( event ) {
-	doCheck( event, '/api/check', { host : $( '#dbHost' ).val( ), port : $( '#dbPort' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'thumbs up', 1: 'exclamation' } );
+	doCheck( event, '/api/check', { host : 'localhost', port : config.DB.port }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
 }
 function smtpCheck( event ) {
-	doCheck( event, '/api/check', { host : $( '#smtpHost' ).val( ), port : '25' }, { 0: 'negative', 1: 'positive' }, { 0: 'exclamation', 1: 'thumbs up' } );
+	doCheck( event, '/api/check', { host : $( '#smtpHost' ).val( ), port : '25' }, { 0: 'yellow', 1: 'positive' }, { 0: 'times', 1: 'check' } );
 }
 
 function taskCheck( event ) {
-	doCheck( event, '/api/task/query', { task : $( '#taskName' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'exclamation', 1: 'thumbs up' } );
+	doCheck( event, '/api/task/query', { task : config.ScheduledTask.name }, { 0: 'positive', 1: 'yellow' }, { 0: 'check', 1: 'info' } );
 }
 
 function taskCreate( event ) {
-	doCheck( event, '/api/task/create', { task : $( '#taskName' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'exclamation', 1: 'thumbs up' } );
+	doCheck( event, '/api/task/create', { task : config.ScheduledTask.name, interval: config.ScheduledTask.interval }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
 }
 
 function taskDelete( event ) {
-	doCheck( event, '/api/task/delete', { task : $( '#taskName' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'exclamation', 1: 'thumbs up' } );
+	doCheck( event, '/api/task/delete', { task : config.ScheduledTask.name }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
 }
 
 function saveIni( event ) {
@@ -61,8 +64,8 @@ function saveIni( event ) {
 	$( '#taskCheck' ).click( );
 	return;
 	var ini = {
-		SITE_NAME: $( '#siteName' ).val ( ),
-		TIME_ZONE: $( '#timeZone' ).val ( )
+		SITE_NAME: $( '#siteName' ).val( ),
+		TIME_ZONE: $( '#timeZone' ).val( )
 	};
 	$.post( '/api/save', ini, function( data ) {
 		$( event.target )
