@@ -53,12 +53,14 @@ var server = http.createServer( function( req, res ) {
     }
 	switch ( uri ) {
 		case '/api/config':
+			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
 			res.end( JSON.stringify( config ) );
 			break;
 		case '/api/check':
 			var checkHost = getParam( req, 'host' );
 			var checkPort = getParam( req, 'port' );
 			var s = new net.Socket( );
+			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
 			s.setTimeout( 1500, function( ) { s.destroy( ); res.end( '0' ); } );
 			s.on( 'error', function( ) {
 				s.destroy( );
@@ -69,26 +71,37 @@ var server = http.createServer( function( req, res ) {
 				res.end( '1' );
 			} );
 			break;
+		case '/api/service/query':
+			var checkTask = getParam( req, 'name' );
+			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
+			proc.exec( 'sc query "' + checkTask + '"', ( err, stdout, stderr ) => {
+				res.end( err == null ? '1' : '0'  );
+			} );
+			break;
 		case '/api/task/query':
 			var checkTask = getParam( req, 'task' );
+			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
 			proc.exec( 'schtasks /query /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
 				res.end( err == null ? '1' : '0'  );
 			} );
 			break;
 		case '/api/task/create':
 			var checkTask = getParam( req, 'task' );
+			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
 			proc.exec( 'schtasks /create /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
 				res.end( err == null ? '1' : '0'  );
 			} );
 			break;
 		case '/api/task/delete':
 			var checkTask = getParam( req, 'task' );
+			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
 			proc.exec( 'schtasks /delete /tn "' + checkTask + '"', ( err, stdout, stderr ) => {
 				res.end( err == null ? '1' : '0'  );
 			} );
 			break;
 		case '/api/stop':
 			console.log( 'Closing...' ) ;
+			res.writeHead( 200, { 'Content-Type': 'text/plain' } );
 			res.end( 'Closed.' );
 			req.connection.end( );
 			req.connection.destroy;

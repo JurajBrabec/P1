@@ -3,17 +3,42 @@ jQuery( document ).ready( function( $ ) {
 		config = JSON.parse( data );
 		$( '#root').val( config.root );
 		$( '#timeZone' ).val( config.timeZone ).dropdown( );
-		$( '#dbDump').val( config.DB.dumpTime );
-		$( '#siteAdmin').val( config.HTTP.admin );
-		$( '#smtpHost').val( config.SMTP.host );
-		$( '#smtpFrom').val( config.SMTP.from );
-		$( '#taskName').val( config.ScheduledTask.name );
-		$( '#httpCheck' ).attr( 'onclick', 'httpCheck( event )' );
-		$( '#dbCheck' ).attr( 'onclick', 'dbCheck( event )' );
-		$( '#smtpCheck' ).attr( 'onclick', 'smtpCheck( event )' );
+		$( '#dbHost' ).val( config.DB.host );
+		$( '#dbPort' ).val( config.DB.port );
+		$( '#dbServiceName' ).val( config.DB.service );
+		$( '#dbDump' ).val( config.DB.dumpTime );
+		$( '#httpServiceName' ).val( config.HTTP.service );
+		$( '#siteAdmin' ).val( config.HTTP.admin );
+		$( '#smtpHost' ).val( config.SMTP.host );
+		$( '#smtpPort' ).val( config.SMTP.port );
+		$( '#smtpFrom' ).val( config.SMTP.from );
+		$( '#taskName' ).val( config.ScheduledTask.name );
+		$( '#httpSSL' ).checkbox( {
+			fireOnInit : true,
+			onChange: function( ) {
+				$( '#httpCheck' )
+					.removeClass( 'negative yellow positive' )
+					.addClass( 'secondary' )
+					.find( 'i' ).attr( 'class', 'question icon' );
+			},
+			onChecked: function( ) {
+				$( '#httpPort' ).val( '443' );
+				$( '#httpCheck' ).click( );
+			},
+			onUnchecked: function( ) {
+				$( '#httpPort' ).val( '80' );
+				$( '#httpCheck' ).click( );
+			}
+		} ).checkbox( config.HTTP.SSL == 1 ? 'check' : 'uncheck' );
+		$( '#httpServiceCheck' ).attr( 'onclick', 'httpServiceCheck( event )' );
+		$( '#dbServiceCheck' ).attr( 'onclick', 'dbServiceCheck( event )' );
+		$( '#httpPortCheck' ).attr( 'onclick', 'httpPortCheck( event )' );
+		$( '#dbPortCheck' ).attr( 'onclick', 'dbPortCheck( event )' );
+		$( '#smtpPortCheck' ).attr( 'onclick', 'smtpPortCheck( event )' );
 		$( '#taskCheck' ).attr( 'onclick', 'taskCheck( event )' );
 		$( '#saveIni' ).attr( 'onclick', 'saveIni( event )' );
 		$( '#stopServer' ).attr( 'onclick', 'stopServer( event )' );
+		$( '#saveIni' ).click( );
 	} );
 } );
 
@@ -34,14 +59,21 @@ function doCheck( event, url, data, classes, icons ) {
 	} );
 }
 
-function httpCheck( event ) {
-	doCheck( event, '/api/check', { host : 'localhost', port : config.HTTP.port }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
+function httpPortCheck( event ) {
+	doCheck( event, '/api/check', { host : 'localhost', port : $( '#httpPort' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
 }
-function dbCheck( event ) {
-	doCheck( event, '/api/check', { host : 'localhost', port : config.DB.port }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
+function dbPortCheck( event ) {
+	doCheck( event, '/api/check', { host : 'localhost', port : $( '#dbPort' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
 }
-function smtpCheck( event ) {
-	doCheck( event, '/api/check', { host : $( '#smtpHost' ).val( ), port : '25' }, { 0: 'yellow', 1: 'positive' }, { 0: 'times', 1: 'check' } );
+function smtpPortCheck( event ) {
+	doCheck( event, '/api/check', { host : $( '#smtpHost' ).val( ), port : $( '#smtpPort' ).val( ) }, { 0: 'yellow', 1: 'positive' }, { 0: 'times', 1: 'check' } );
+}
+
+function httpServiceCheck( event ) {
+	doCheck( event, '/api/service/query', { name : $( '#httpServiceName' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
+}
+function dbServiceCheck( event ) {
+	doCheck( event, '/api/service/query', { name : $( '#dbServiceName' ).val( ) }, { 0: 'positive', 1: 'negative' }, { 0: 'check', 1: 'times' } );
 }
 
 function taskCheck( event ) {
@@ -58,10 +90,12 @@ function taskDelete( event ) {
 
 function saveIni( event ) {
 	event.preventDefault( );
-	$( '#httpCheck' ).click( );
-	$( '#dbCheck' ).click( );
-	$( '#smtpCheck' ).click( );
+	$( '#httpPortCheck' ).click( );
+	$( '#dbPortCheck' ).click( );
+	$( '#smtpPortCheck' ).click( );
 	$( '#taskCheck' ).click( );
+	$( '#httpServiceCheck' ).click( );
+	$( '#dbServiceCheck' ).click( );
 	return;
 	var ini = {
 		SITE_NAME: $( '#siteName' ).val( ),
